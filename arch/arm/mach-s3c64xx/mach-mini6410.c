@@ -355,6 +355,11 @@ static void __init mini6410_machine_init(void)
     i2c_register_board_info(1, i2c_devs1, ARRAY_SIZE(i2c_devs1));
 #endif
 
+    // 添加PWM
+    gpio_request(S3C64XX_GPF(14), "PWM");
+    s3c_gpio_setpull(S3C64XX_GPF(14), S3C_GPIO_PULL_NONE);
+    s3c_gpio_cfgpin(S3C64XX_GPF(14), S3C_GPIO_SFN(2));
+
 	/* configure nCS1 width to 16 bits */
 
 	cs1 = __raw_readl(S3C64XX_SROM_BW) &
