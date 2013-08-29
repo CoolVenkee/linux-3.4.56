@@ -34,15 +34,16 @@
 #include <mach/regs-modem.h>
 #include <mach/regs-srom.h>
 
+#include <plat/gpio-cfg.h>
 #include <plat/adc.h>
 #include <plat/cpu.h>
 #include <plat/devs.h>
 #include <plat/fb.h>
 #include <plat/nand.h>
-#include <plat/regs-serial.h>
 #include <plat/ts.h>
 #include <plat/regs-fb-v4.h>
 #include <plat/iic.h>
+#include <plat/regs-serial.h>
 
 #include <video/platform_lcd.h>
 
@@ -208,6 +209,16 @@ static struct platform_device mini6410_lcd_powerdev = {
 	.dev.platform_data	= &mini6410_lcd_power_data,
 };
 
+// 添加PWM支持
+struct platform_device mini6410_pwm_beeper = {
+    .name = "pwm-beeper",
+    .id = 0,
+    .dev = {
+        .parent = &s3c_device_timer[0].dev,
+        .platform_data = NULL,
+    }
+};
+
 static struct platform_device *mini6410_devices[] __initdata = {
 	&mini6410_device_eth,
 	&s3c_device_hsmmc0,
@@ -217,7 +228,12 @@ static struct platform_device *mini6410_devices[] __initdata = {
 	&s3c_device_fb,
 	&mini6410_lcd_powerdev,
 	&s3c_device_adc,
-	&s3c_device_ts,
+    // 添加PWM支持
+    &s3c_device_timer[0],
+    &mini6410_pwm_beeper,
+
+    //&s3c_device_ts,
+
     // 添加i2c平台数据
     &s3c_device_i2c0,
 #ifdef CONFIG_S3C_DEV_I2C1
@@ -333,9 +349,11 @@ static void __init mini6410_machine_init(void)
 
     // 设置i2c平台数据
     s3c_i2c0_set_platdata(NULL);
-    s3c_i2c1_set_platdata(NULL);
     i2c_register_board_info(0, i2c_devs0, ARRAY_SIZE(i2c_devs0));
+#ifdef CONFIG_S3C_DEV_I2C1
+    s3c_i2c1_set_platdata(NULL);
     i2c_register_board_info(1, i2c_devs1, ARRAY_SIZE(i2c_devs1));
+#endif
 
 	/* configure nCS1 width to 16 bits */
 
